@@ -1,0 +1,4 @@
+web/** linguist-vendored
+example/** linguist-vendored
+internal/infrastructure/web/dist/** linguist-generated
+*.svelte linguist-vendored
