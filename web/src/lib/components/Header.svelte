@@ -12,7 +12,7 @@
     !messages.liveEnabled ? 'paused' : messages.isConnected ? 'live' : 'offline',
   )
 
-  let filtering = $derived(messages.searchQuery.trim() !== '' || messages.activeInbox !== null)
+  let filtering = $derived(messages.searchQuery.trim() !== '')
 
   function confirmClear() {
     confirm.ask({

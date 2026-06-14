@@ -3,12 +3,7 @@
   import search from 'pixelarticons/svg/search.svg?raw'
   import code from 'pixelarticons/svg/brackets-angle.svg?raw'
   import refresh from 'pixelarticons/svg/reload.svg?raw'
-  import broom from 'pixelarticons/svg/wind.svg?raw'
   import cog from 'pixelarticons/svg/settings-cog.svg?raw'
-  import grid from 'pixelarticons/svg/grid-2x2-2.svg?raw'
-  import folder from 'pixelarticons/svg/folder.svg?raw'
-  import plus from 'pixelarticons/svg/plus.svg?raw'
-  import infoCircle from 'pixelarticons/svg/info-box.svg?raw'
   import times from 'pixelarticons/svg/close.svg?raw'
   import checkCircle from 'pixelarticons/svg/check.svg?raw'
   import trash from 'pixelarticons/svg/trash.svg?raw'
@@ -20,7 +15,6 @@
   import externalLink from 'pixelarticons/svg/external-link.svg?raw'
   import bell from 'pixelarticons/svg/bell.svg?raw'
   import expand from 'pixelarticons/svg/expand.svg?raw'
-  import inbox from 'pixelarticons/svg/inbox.svg?raw'
   import mobile from 'pixelarticons/svg/smartphone.svg?raw'
   import tablet from 'pixelarticons/svg/tablet.svg?raw'
   import desktop from 'pixelarticons/svg/monitor.svg?raw'
@@ -37,12 +31,7 @@
     search,
     code,
     refresh,
-    broom,
     cog,
-    grid,
-    folder,
-    plus,
-    'info-circle': infoCircle,
     times,
     'check-circle': checkCircle,
     trash,
@@ -54,7 +43,6 @@
     'external-link': externalLink,
     bell,
     expand,
-    inbox,
     mobile,
     tablet,
     desktop,

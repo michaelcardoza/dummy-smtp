@@ -14,10 +14,3 @@ export interface Message {
   attachments: Attachment[]
   createdAt: string
 }
-
-export interface Inbox {
-  id: string
-  name: string
-  domain: string
-  description: string
-}

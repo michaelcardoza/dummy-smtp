@@ -5,7 +5,6 @@
   import { confirm } from './lib/stores/confirm.svelte'
   import { SMTP_HOST, SMTP_PORT } from './lib/config'
   import Header from './lib/components/Header.svelte'
-  import InboxRail from './lib/components/InboxRail.svelte'
   import MessageList from './lib/components/MessageList.svelte'
   import MessageDetail from './lib/components/MessageDetail.svelte'
   import Toaster from './lib/components/Toaster.svelte'
@@ -21,7 +20,6 @@
 <div class="flex h-screen flex-col bg-neutral-950 font-mono text-base text-neutral-200 antialiased">
   <Header />
   <main class="flex flex-1 overflow-hidden">
-<!--    <InboxRail />-->
     <MessageList />
     <section class="flex-1 overflow-y-auto bg-neutral-950">
       {#if messages.selected}
