@@ -1,9 +1,9 @@
 # Dummy SMTP
 
 A development mail-catcher: a fake SMTP server that accepts mail from any app
-pointed at it, stores it in memory, and exposes a web UI and JSON API to inspect
-captured messages. **Nothing is ever relayed outbound** — it's for local
-development and testing only.
+pointed at it, stores it (in memory or SQLite), and exposes a web UI and JSON API
+to inspect captured messages. **Nothing is ever relayed outbound** — it's for
+local development and testing only.
 
 Built in **Go**, shipped as a single binary with the web UI (Svelte) embedded.
 
@@ -16,7 +16,7 @@ Built in **Go**, shipped as a single binary with the web UI (Svelte) embedded.
 - Responsive HTML preview with light/dark background
 - JSON API to list, fetch and delete messages
 - Live updates over Server-Sent Events
-- Single Go binary with the UI embedded
+- Pluggable storage: in-memory (default) or SQLite
 
 ## Getting started
 
@@ -35,12 +35,46 @@ Build a standalone binary:
 go build ./cmd/dummy-smtp
 ```
 
+## Docker
+
+Run the image (in-memory, ephemeral — the usual mail-catcher use):
+
+```bash
+docker build -t dummy-smtp .
+docker run --rm -p 1025:1025 -p 8025:8025 dummy-smtp
+# UI: http://localhost:8025 · SMTP: localhost:1025
+```
+
+Or with Docker Compose — two services share the image: one in-memory and one
+backed by SQLite (persisted on the `sqlite-mail-data` volume):
+
+```bash
+docker compose build
+docker compose up memory   # in-memory (ephemeral)
+docker compose up sqlite   # SQLite, persisted across restarts
+```
+
+> Both services bind the same host ports (`1025`/`8025`), so run **one at a
+> time** — or change the ports in `docker-compose.yml`.
+
 ## Configuration
 
-| Env var     | Default | Description        |
-| ----------- | ------- | ------------------ |
-| `SMTP_ADDR` | `:1025` | SMTP listen address |
-| `HTTP_ADDR` | `:8025` | Web/API listen address |
+Each setting can be passed as an env var or a CLI flag (the env var is the flag's
+default):
+
+| Setting      | Env var     | Flag         | Default                          |
+| ------------ | ----------- | ------------ | -------------------------------- |
+| SMTP address | `SMTP_ADDR` | `-smtp-addr` | `:1025`                          |
+| HTTP address | `HTTP_ADDR` | `-http-addr` | `:8025`                          |
+| Storage      | `STORAGE`   | `-storage`   | `memory` (`memory` or `sqlite`)  |
+
+```bash
+# custom ports + sqlite, via flags
+go run ./cmd/dummy-smtp -smtp-addr :2025 -http-addr :9025 -storage sqlite
+
+# the same via env vars
+SMTP_ADDR=:2025 HTTP_ADDR=:9025 STORAGE=sqlite go run ./cmd/dummy-smtp
+```
 
 ## Sending mail
 
