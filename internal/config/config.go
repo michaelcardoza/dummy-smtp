@@ -7,6 +7,7 @@ import (
 
 	"github.com/michaelcardoza/dummy-smtp/internal/core/mail"
 	"github.com/michaelcardoza/dummy-smtp/internal/infrastructure/storage/memory"
+	"github.com/michaelcardoza/dummy-smtp/internal/infrastructure/storage/mongo"
 	"github.com/michaelcardoza/dummy-smtp/internal/infrastructure/storage/sqlite"
 )
 
@@ -54,6 +55,13 @@ func Load() (*Config, error) {
 		}
 
 		cfg.Storage = sqlite.NewStorage(db)
+	case storageMongo:
+		client, err := mongo.NewClient(cfg.MongoURI)
+		if err != nil {
+			return nil, err
+		}
+
+		cfg.Storage = mongo.NewStorage(client)
 	default:
 		return nil, errors.New("invalid storage")
 	}
