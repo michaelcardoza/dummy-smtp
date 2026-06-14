@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log/slog"
 	"net/http"
 
 	"github.com/michaelcardoza/dummy-smtp/internal/core/mail"
@@ -19,11 +18,10 @@ type MailService interface {
 
 type Handler struct {
 	mailService MailService
-	log         *slog.Logger
 }
 
-func NewHandler(mailService MailService, log *slog.Logger) *Handler {
-	return &Handler{mailService: mailService, log: log}
+func NewHandler(mailService MailService) *Handler {
+	return &Handler{mailService: mailService}
 }
 
 func (h *Handler) Routes() http.Handler {
@@ -82,9 +80,7 @@ func (h *Handler) deleteAll(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		h.log.Error("failed to encode response", "error", err)
-	}
+	_ = json.NewEncoder(w).Encode(v)
 }
 
 func (h *Handler) writeError(w http.ResponseWriter, status int, msg string) {

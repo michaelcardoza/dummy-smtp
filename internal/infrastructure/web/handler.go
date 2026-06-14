@@ -16,12 +16,12 @@ type Handler struct {
 	fileServer http.Handler
 }
 
-func NewHandler(broker *Broker) (*Handler, error) {
+func NewHandler(broker *Broker) *Handler {
 	distFS, _ := fs.Sub(dist, "dist")
 	return &Handler{
 		broker:     broker,
 		fileServer: http.FileServer(http.FS(distFS)),
-	}, nil
+	}
 }
 
 func (h *Handler) Routes() http.Handler {

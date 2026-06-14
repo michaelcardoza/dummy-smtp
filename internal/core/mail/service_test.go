@@ -6,52 +6,61 @@ import (
 	"testing"
 )
 
-type fakeRepo struct {
+type fakeStorage struct {
 	saved   map[string]*Message
 	saveErr error
 }
 
-func newFakeRepo() *fakeRepo {
-	return &fakeRepo{
+func newFakeStorage() *fakeStorage {
+	return &fakeStorage{
 		saved: make(map[string]*Message),
 	}
 }
 
-func (r *fakeRepo) Save(_ context.Context, message *Message) error {
-	if r.saveErr != nil {
-		return r.saveErr
+func (s *fakeStorage) Save(_ context.Context, message *Message) error {
+	if s.saveErr != nil {
+		return s.saveErr
 	}
-	r.saved[message.ID] = message
+	s.saved[message.ID] = message
 	return nil
 }
 
-func (r *fakeRepo) List(_ context.Context) ([]*Message, error) {
-	messages := make([]*Message, 0, len(r.saved))
-	for _, message := range r.saved {
+func (s *fakeStorage) List(_ context.Context) ([]*Message, error) {
+	messages := make([]*Message, 0, len(s.saved))
+	for _, message := range s.saved {
 		messages = append(messages, message)
 	}
 	return messages, nil
 }
 
-func (r *fakeRepo) Get(_ context.Context, id string) (*Message, error) {
-	message, ok := r.saved[id]
+func (s *fakeStorage) Get(_ context.Context, id string) (*Message, error) {
+	message, ok := s.saved[id]
 	if !ok {
 		return nil, ErrNotFound
 	}
 	return message, nil
 }
 
-func (r *fakeRepo) DeleteById(_ context.Context, id string) error {
-	if _, ok := r.saved[id]; !ok {
+func (s *fakeStorage) DeleteByID(_ context.Context, id string) error {
+	if _, ok := s.saved[id]; !ok {
 		return ErrNotFound
 	}
-	delete(r.saved, id)
+	delete(s.saved, id)
+	return nil
+}
+
+func (s *fakeStorage) DeleteAll(_ context.Context) error {
+	s.saved = nil
+	return nil
+}
+
+func (s *fakeStorage) Close() error {
 	return nil
 }
 
 func TestService_Capture(t *testing.T) {
-	repo := newFakeRepo()
-	svc := NewService(repo)
+	storage := newFakeStorage()
+	svc := NewService(storage, nil)
 
 	message, err := svc.Capture(context.Background(), CaptureParams{
 		From:     "alice@example.com",
@@ -76,14 +85,14 @@ func TestService_Capture(t *testing.T) {
 	if message.HTMLBody != "<p>html</p>" {
 		t.Fatalf("got %q, want %s", message.HTMLBody, "<p>html</p>")
 	}
-	if _, ok := repo.saved[message.ID]; !ok {
+	if _, ok := storage.saved[message.ID]; !ok {
 		t.Error("message not saved")
 	}
 }
 
 func TestService_CaptureNoRecipients(t *testing.T) {
-	repo := newFakeRepo()
-	svc := NewService(repo)
+	storage := newFakeStorage()
+	svc := NewService(storage, nil)
 	_, err := svc.Capture(context.Background(), CaptureParams{From: "alice@example.com"})
 	if !errors.Is(err, ErrNoRecipients) {
 		t.Errorf("expected ErrNoRecipients, got: %v", err)
@@ -91,9 +100,9 @@ func TestService_CaptureNoRecipients(t *testing.T) {
 }
 
 func TestService_CaptureSaveError(t *testing.T) {
-	repo := newFakeRepo()
-	repo.saveErr = errors.New("disk full")
-	svc := NewService(repo)
+	storage := newFakeStorage()
+	storage.saveErr = errors.New("disk full")
+	svc := NewService(storage, nil)
 	_, err := svc.Capture(context.Background(), CaptureParams{
 		From: "alice@example.com",
 		To:   []string{"bob@example.com"},

@@ -19,12 +19,12 @@ type CaptureParams struct {
 }
 
 type Service struct {
-	repo MessageRepository
-	pub  Publisher
+	storage   Storage
+	publisher Publisher
 }
 
-func NewService(repo MessageRepository, pub Publisher) *Service {
-	return &Service{repo: repo, pub: pub}
+func NewService(storage Storage, publisher Publisher) *Service {
+	return &Service{storage: storage, publisher: publisher}
 }
 
 func (s *Service) Capture(ctx context.Context, params CaptureParams) (*Message, error) {
@@ -43,27 +43,29 @@ func (s *Service) Capture(ctx context.Context, params CaptureParams) (*Message, 
 		return nil, ErrNoRecipients
 	}
 
-	if err := s.repo.Save(ctx, message); err != nil {
+	if err := s.storage.Save(ctx, message); err != nil {
 		return nil, fmt.Errorf("save message: %w", err)
 	}
 
-	s.pub.Publish(message)
+	if s.publisher != nil {
+		s.publisher.Publish(message)
+	}
 
 	return message, nil
 }
 
 func (s *Service) List(ctx context.Context) ([]*Message, error) {
-	return s.repo.List(ctx)
+	return s.storage.List(ctx)
 }
 
 func (s *Service) Get(ctx context.Context, id string) (*Message, error) {
-	return s.repo.Get(ctx, id)
+	return s.storage.Get(ctx, id)
 }
 
 func (s *Service) DeleteByID(ctx context.Context, id string) error {
-	return s.repo.DeleteByID(ctx, id)
+	return s.storage.DeleteByID(ctx, id)
 }
 
 func (s *Service) DeleteAll(ctx context.Context) error {
-	return s.repo.DeleteAll(ctx)
+	return s.storage.DeleteAll(ctx)
 }

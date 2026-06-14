@@ -15,16 +15,17 @@ type Server struct {
 	listener net.Listener
 }
 
-type Deps struct {
+type Options struct {
+	Addr     string
 	Log      *slog.Logger
 	Capturer Capturer
 }
 
-func NewServer(addr string, deps Deps) *Server {
+func NewServer(opts Options) *Server {
 	return &Server{
-		addr:     addr,
-		capturer: deps.Capturer,
-		log:      deps.Log,
+		addr:     opts.Addr,
+		capturer: opts.Capturer,
+		log:      opts.Log,
 	}
 }
 
@@ -48,7 +49,7 @@ func (s *Server) accept(ctx context.Context) {
 			if errors.Is(err, net.ErrClosed) {
 				return
 			}
-			s.log.Error("smtp accept error", err)
+			s.log.Error("smtp accept error", "error", err)
 			continue
 		}
 		go newSession(conn, s.capturer).serve(ctx)

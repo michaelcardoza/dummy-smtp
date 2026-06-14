@@ -7,26 +7,26 @@ import (
 	"github.com/michaelcardoza/dummy-smtp/internal/core/mail"
 )
 
-type Repository struct {
+type Storage struct {
 	mu       sync.RWMutex
 	messages []*mail.Message
 }
 
-func New() *Repository {
-	return &Repository{}
+func NewStorage() *Storage {
+	return &Storage{}
 }
 
-func (r *Repository) Save(_ context.Context, message *mail.Message) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.messages = append(r.messages, message)
+func (s *Storage) Save(_ context.Context, message *mail.Message) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.messages = append(s.messages, message)
 	return nil
 }
 
-func (r *Repository) Get(_ context.Context, id string) (*mail.Message, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	for _, message := range r.messages {
+func (s *Storage) Get(_ context.Context, id string) (*mail.Message, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, message := range s.messages {
 		if message.ID == id {
 			return message, nil
 		}
@@ -34,31 +34,35 @@ func (r *Repository) Get(_ context.Context, id string) (*mail.Message, error) {
 	return nil, mail.ErrNotFound
 }
 
-func (r *Repository) List(_ context.Context) ([]*mail.Message, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	messages := make([]*mail.Message, len(r.messages))
-	for i, message := range r.messages {
-		messages[len(r.messages)-1-i] = message
+func (s *Storage) List(_ context.Context) ([]*mail.Message, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	messages := make([]*mail.Message, len(s.messages))
+	for i, message := range s.messages {
+		messages[len(s.messages)-1-i] = message
 	}
 	return messages, nil
 }
 
-func (r *Repository) DeleteByID(_ context.Context, id string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	for i, message := range r.messages {
+func (s *Storage) DeleteByID(_ context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i, message := range s.messages {
 		if message.ID == id {
-			r.messages = append(r.messages[:i], r.messages[i+1:]...)
+			s.messages = append(s.messages[:i], s.messages[i+1:]...)
 			return nil
 		}
 	}
 	return mail.ErrNotFound
 }
 
-func (r *Repository) DeleteAll(_ context.Context) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.messages = []*mail.Message{}
+func (s *Storage) DeleteAll(_ context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.messages = nil
+	return nil
+}
+
+func (s *Storage) Close() error {
 	return nil
 }

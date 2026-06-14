@@ -8,7 +8,7 @@ import (
 )
 
 func TestSave(t *testing.T) {
-	repo := New()
+	repo := NewStorage()
 	ctx := context.Background()
 	msgID := "test-msg-1"
 

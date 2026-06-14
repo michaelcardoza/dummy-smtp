@@ -6,6 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/michaelcardoza/dummy-smtp/internal/infrastructure/api"
+	"github.com/michaelcardoza/dummy-smtp/internal/infrastructure/web"
 )
 
 type Server struct {
@@ -13,17 +16,23 @@ type Server struct {
 	server *http.Server
 }
 
-type Deps struct {
-	Log     *slog.Logger
-	Handler http.Handler
+type Options struct {
+	Addr       string
+	Log        *slog.Logger
+	ApiHandler *api.Handler
+	WebHandler *web.Handler
 }
 
-func New(addr string, deps Deps) *Server {
+func New(opts Options) *Server {
+	mux := http.NewServeMux()
+	mux.Handle("/api/v1/", opts.ApiHandler.Routes())
+	mux.Handle("/", opts.WebHandler.Routes())
+
 	return &Server{
-		log: deps.Log,
+		log: opts.Log,
 		server: &http.Server{
-			Addr:         addr,
-			Handler:      deps.Handler,
+			Addr:         opts.Addr,
+			Handler:      mux,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 0,
 			IdleTimeout:  60 * time.Second,
