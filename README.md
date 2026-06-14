@@ -1,7 +1,7 @@
 # Dummy SMTP
 
 A development mail-catcher: a fake SMTP server that accepts mail from any app
-pointed at it, stores it (in memory or SQLite), and exposes a web UI and JSON API
+pointed at it, stores it (in memory, SQLite or MongoDB), and exposes a web UI and JSON API
 to inspect captured messages. **Nothing is ever relayed outbound** — it's for
 local development and testing only.
 
@@ -16,7 +16,7 @@ Built in **Go**, shipped as a single binary with the web UI (Svelte) embedded.
 - Responsive HTML preview with light/dark background
 - JSON API to list, fetch and delete messages
 - Live updates over Server-Sent Events
-- Pluggable storage: in-memory (default) or SQLite
+- Pluggable storage: in-memory (default), SQLite or MongoDB
 
 ## Getting started
 
@@ -50,8 +50,9 @@ backed by SQLite (persisted on the `sqlite-mail-data` volume):
 
 ```bash
 docker compose build
-docker compose up memory   # in-memory (ephemeral)
-docker compose up sqlite   # SQLite, persisted across restarts
+docker compose up dummy-smtp-memory -d           # in-memory (ephemeral)
+docker compose up dummy-smtp-sqlite -d           # SQLite, persisted across restarts
+docker compose up monogodb dummy-smtp-mongo -d   # MongoDB, persisted across restarts
 ```
 
 > Both services bind the same host ports (`1025`/`8025`), so run **one at a
@@ -62,11 +63,12 @@ docker compose up sqlite   # SQLite, persisted across restarts
 Each setting can be passed as an env var or a CLI flag (the env var is the flag's
 default):
 
-| Setting      | Env var     | Flag         | Default                          |
-| ------------ | ----------- | ------------ | -------------------------------- |
-| SMTP address | `SMTP_ADDR` | `-smtp-addr` | `:1025`                          |
-| HTTP address | `HTTP_ADDR` | `-http-addr` | `:8025`                          |
-| Storage      | `STORAGE`   | `-storage`   | `memory` (`memory` or `sqlite`)  |
+| Setting      | Env var      | Flag          | Default                                 |
+| ------------ | ------------ | ------------- | --------------------------------------- |
+| SMTP address | `SMTP_ADDR`  | `-smtp-addr`  | `:1025`                                 |
+| HTTP address | `HTTP_ADDR`  | `-http-addr`  | `:8025`                                 |
+| Storage      | `STORAGE`    | `-storage`    | `memory` (`memory`, `sqlite`, `mongo`)  |
+| Mongo URI    | `MONGO_URI`  | `-mongo-uri`  | `mongodb://127.0.0.1:27017/dummysmtp`   |
 
 ```bash
 # custom ports + sqlite, via flags
@@ -74,6 +76,13 @@ go run ./cmd/dummy-smtp -smtp-addr :2025 -http-addr :9025 -storage sqlite
 
 # the same via env vars
 SMTP_ADDR=:2025 HTTP_ADDR=:9025 STORAGE=sqlite go run ./cmd/dummy-smtp
+```
+
+`mongo` needs a running MongoDB reachable at `MONGO_URI`:
+
+```bash
+docker run -d -p 27017:27017 mongo:7     # MongoDB on localhost:27017
+STORAGE=mongo go run ./cmd/dummy-smtp    # uses the default MONGO_URI (localhost)
 ```
 
 ## Sending mail
