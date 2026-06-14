@@ -12,9 +12,9 @@
 
 <nav class="w-96 shrink-0 overflow-y-auto border-r-2 border-neutral-900 bg-neutral-950">
   {#each messages.filtered as m, i (m.id)}
-    {#if i === 0 || dayLabel(m.created_at) !== dayLabel(messages.filtered[i - 1].created_at)}
+    {#if i === 0 || dayLabel(m.createdAt) !== dayLabel(messages.filtered[i - 1].createdAt)}
       <div class="border-b border-neutral-900 bg-neutral-950 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent glow">
-        {dayLabel(m.created_at)}
+        {dayLabel(m.createdAt)}
       </div>
     {/if}
     <button
@@ -42,7 +42,7 @@
             <Icon name="paperclip" />{m.attachments.length}
           </span>
         {/if}
-        <span class="ml-auto shrink-0" title={m.created_at}>{ago(m.created_at)}</span>
+        <span class="ml-auto shrink-0" title={m.createdAt}>{ago(m.createdAt)}</span>
       </div>
     </button>
   {:else}

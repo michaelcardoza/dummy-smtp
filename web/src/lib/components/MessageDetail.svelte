@@ -25,7 +25,7 @@
 
   let downloadName = $derived(downloadBaseName(message))
   let highlightedSource = $derived(
-    message.html_body ? highlight(formatHtml(message.html_body), 'xml') : '',
+    message.htmlBody ? highlight(formatHtml(message.htmlBody), 'xml') : '',
   )
   let highlightedJson = $derived(highlight(JSON.stringify(message, null, 2), 'json'))
   let rawHeaders = $derived(message.raw.split(/\r?\n\r?\n/)[0] ?? '')
@@ -61,7 +61,7 @@
   // Default to the HTML tab when a message has an HTML part, otherwise Text.
   $effect(() => {
     message.id
-    activeTab = message.html_body ? 'html' : 'text'
+    activeTab = message.htmlBody ? 'html' : 'text'
   })
 </script>
 
@@ -103,8 +103,8 @@
           </div>
           <div class="flex items-center">
             <dt class="inline-block w-16 font-semibold text-neutral-300">date</dt>
-            {datetime(message.created_at)}
-            <span class="text-neutral-600">· {ago(message.created_at)}</span>
+            {datetime(message.createdAt)}
+            <span class="text-neutral-600">· {ago(message.createdAt)}</span>
           </div>
         </dl>
       </div>
@@ -152,7 +152,7 @@
         {label}
       </button>
     {/each}
-    {#if activeTab === 'html' && message.html_body}
+    {#if activeTab === 'html' && message.htmlBody}
       <div class="ml-auto flex items-center gap-3 self-center">
         <div class="flex h-9 border-2 border-neutral-900">
           {#each widthOptions as [width, label], i}
@@ -194,19 +194,19 @@
 
   <div class="flex-1 overflow-y-auto p-8">
     {#if activeTab === 'html'}
-      {#if message.html_body}
+      {#if message.htmlBody}
         <iframe
           title="html"
           sandbox=""
-          srcdoc={message.html_body}
+          srcdoc={message.htmlBody}
           class="relative z-40 mx-auto block h-full w-full {widthClasses[previewWidth]} border-2 border-neutral-900 {previewBackground === 'light' ? 'bg-white' : 'bg-neutral-900'}"
         ></iframe>
       {:else}
         <div class="text-neutral-600">(no HTML part)</div>
       {/if}
     {:else if activeTab === 'text'}
-      {#if message.text_body}
-        <pre class="whitespace-pre-wrap break-words leading-relaxed text-neutral-200">{message.text_body}</pre>
+      {#if message.textBody}
+        <pre class="whitespace-pre-wrap break-words leading-relaxed text-neutral-200">{message.textBody}</pre>
       {:else}
         <div class="text-neutral-600">(no text part)</div>
       {/if}

@@ -8,11 +8,11 @@ export interface Message {
   from: string
   to: string[]
   subject: string
-  text_body: string
-  html_body: string
+  textBody: string
+  htmlBody: string
   raw: string
   attachments: Attachment[]
-  created_at: string
+  createdAt: string
 }
 
 export interface Inbox {

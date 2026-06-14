@@ -7,11 +7,11 @@ type Message struct {
 	From        string       `json:"from"`
 	To          []string     `json:"to"`
 	Subject     string       `json:"subject"`
-	TextBody    string       `json:"text_body"`
-	HTMLBody    string       `json:"html_body"`
+	TextBody    string       `json:"textBody"`
+	HTMLBody    string       `json:"htmlBody"`
 	Raw         string       `json:"raw"`
 	Attachments []Attachment `json:"attachments"`
-	CreatedAt   time.Time    `json:"created_at"`
+	CreatedAt   time.Time    `json:"createdAt"`
 }
 
 func (m *Message) HasRecipients() bool {
