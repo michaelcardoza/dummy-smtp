@@ -16,3 +16,5 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 node_modules/
+dist/
+*.db*

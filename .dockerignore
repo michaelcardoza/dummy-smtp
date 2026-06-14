@@ -1,0 +1,10 @@
+.git
+**/node_modules/
+**/dist/
+docs/
+example/
+sdk/
+*.db*
+Makefile
+LICENSE
+README.md

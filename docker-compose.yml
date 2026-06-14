@@ -1,0 +1,21 @@
+services:
+  memory:
+    build: .
+    image: dummy-smtp
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  sqlite:
+    build: .
+    image: dummy-smtp
+    environment:
+      STORAGE: sqlite
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - sqlite-mail-data:/data
+
+volumes:
+  sqlite-mail-data:
