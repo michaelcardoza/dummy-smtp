@@ -13,7 +13,7 @@
 <nav class="w-96 shrink-0 overflow-y-auto border-r-2 border-neutral-900 bg-neutral-950">
   {#each messages.filtered as m, i (m.id)}
     {#if i === 0 || dayLabel(m.createdAt) !== dayLabel(messages.filtered[i - 1].createdAt)}
-      <div class="border-b border-neutral-900 bg-neutral-950 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent glow">
+      <div class="sticky top-0 z-10 border-b border-neutral-900 bg-neutral-950 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent glow">
         {dayLabel(m.createdAt)}
       </div>
     {/if}
@@ -23,12 +23,7 @@
         ? 'border-l-accent bg-neutral-900'
         : 'border-l-transparent'}"
     >
-      <div class="flex items-center gap-2.5">
-        {#if i === 0}
-          <span class="h-2 w-2 shrink-0 bg-accent"></span>
-        {/if}
-        <div class="min-w-0 truncate font-semibold text-neutral-100">{m.subject || '(no subject)'}</div>
-      </div>
+      <div class="truncate font-semibold text-neutral-100">{m.subject || '(no subject)'}</div>
       <div class="truncate text-sm text-neutral-500">
         <span class="text-neutral-600">from</span> {m.from}
       </div>
