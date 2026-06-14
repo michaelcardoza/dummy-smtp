@@ -1,12 +1,12 @@
 services:
-  memory:
+  dummy-smtp-memory:
     build: .
     image: dummy-smtp
     ports:
       - "1025:1025"
       - "8025:8025"
 
-  sqlite:
+  dummy-smtp-sqlite:
     build: .
     image: dummy-smtp
     environment:
@@ -17,5 +17,31 @@ services:
     volumes:
       - sqlite-mail-data:/data
 
+  dummy-smtp-mongo:
+    build: .
+    image: dummy-smtp
+    environment:
+      STORAGE: mongo
+      MONGO_URI: mongodb://mongodb:27017/dummysmtp
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  mongodb:
+    image: mongo:8
+    volumes:
+      - mongo-mail-data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   sqlite-mail-data:
+  mongo-mail-data:
