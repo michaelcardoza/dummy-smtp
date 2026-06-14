@@ -8,5 +8,5 @@ type Storage interface {
 	List(ctx context.Context) ([]*Message, error)
 	DeleteByID(ctx context.Context, id string) error
 	DeleteAll(ctx context.Context) error
-	Close() error
+	Close(ctx context.Context) error
 }

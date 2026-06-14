@@ -63,6 +63,6 @@ func (s *Storage) DeleteAll(_ context.Context) error {
 	return nil
 }
 
-func (s *Storage) Close() error {
+func (s *Storage) Close(_ context.Context) error {
 	return nil
 }

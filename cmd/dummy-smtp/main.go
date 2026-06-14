@@ -70,7 +70,7 @@ func main() {
 		log.Error("smtp shutdown error", "error", err)
 	}
 
-	if err = cfg.Storage.Close(); err != nil {
+	if err = cfg.Storage.Close(shutdownCtx); err != nil {
 		log.Error("storage close error", "error", err)
 	}
 }

@@ -154,12 +154,10 @@ func (s *Storage) DeleteByID(ctx context.Context, id string) error {
 
 func (s *Storage) DeleteAll(ctx context.Context) error {
 	stmp := "DELETE FROM messages"
-	if _, err := s.db.ExecContext(ctx, stmp); err != nil {
-		return err
-	}
-	return nil
+	_, err := s.db.ExecContext(ctx, stmp)
+	return err
 }
 
-func (s *Storage) Close() error {
+func (s *Storage) Close(_ context.Context) error {
 	return s.db.Close()
 }
