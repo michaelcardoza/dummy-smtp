@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/smtp"
 
 	"github.com/michaelcardoza/dummy-smtp/internal/core/mail"
 )
@@ -28,6 +29,7 @@ func (h *Handler) Routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/messages", h.list)
 	mux.HandleFunc("DELETE /api/v1/messages", h.deleteAll)
+	mux.HandleFunc("POST /api/v1/messages/test", h.sendTest)
 	mux.HandleFunc("GET /api/v1/messages/{id}", h.get)
 	mux.HandleFunc("DELETE /api/v1/messages/{id}", h.delete)
 	return mux
@@ -71,6 +73,22 @@ func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) deleteAll(w http.ResponseWriter, r *http.Request) {
 	if err := h.mailService.DeleteAll(r.Context()); err != nil {
+		h.writeError(w, http.StatusInternalServerError, "failed to delete messages")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) sendTest(w http.ResponseWriter, r *http.Request) {
+	from := "dummystmp.server@example.com"
+	to := "dummystmp.client@example.com"
+	msg := "From: " + from + "\n" +
+		"To: " + to + "\n" +
+		"Subject: Test Email: System Check\n\n" +
+		"This is a test message to verify that your email system is properly delivering and receiving messages."
+
+	err := smtp.SendMail("127.0.0.1:1025", nil, from, []string{to}, []byte(msg))
+	if err != nil {
 		h.writeError(w, http.StatusInternalServerError, "failed to delete messages")
 		return
 	}
