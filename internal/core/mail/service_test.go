@@ -54,7 +54,7 @@ func (s *fakeStorage) DeleteAll(_ context.Context) error {
 	return nil
 }
 
-func (s *fakeStorage) Close() error {
+func (s *fakeStorage) Close(_ context.Context) error {
 	return nil
 }
 
