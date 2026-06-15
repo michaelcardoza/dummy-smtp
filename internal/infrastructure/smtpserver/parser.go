@@ -59,14 +59,20 @@ func parseMultipart(body io.Reader, boundary string, p *parsedMessage) {
 		if err != nil {
 			return
 		}
+		mediaType, params, _ := mime.ParseMediaType(part.Header.Get("Content-Type"))
+
+		if strings.HasPrefix(mediaType, "multipart/") {
+			parseMultipart(part, params["boundary"], p)
+			continue
+		}
+
 		content, _ := io.ReadAll(part)
-		mediaType, _, _ := mime.ParseMediaType(part.Header.Get("Content-Type"))
 
 		if filename := part.FileName(); filename != "" {
 			p.Attachments = append(p.Attachments, coremail.Attachment{
 				Filename:    filename,
 				ContentType: mediaType,
-				Content:     content,
+				Size:        len(content),
 			})
 			continue
 		}
