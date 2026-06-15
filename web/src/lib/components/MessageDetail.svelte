@@ -24,9 +24,7 @@
   let { message }: { message: Message } = $props()
 
   let downloadName = $derived(downloadBaseName(message))
-  let highlightedSource = $derived(
-    message.htmlBody ? highlight(formatHtml(message.htmlBody), 'xml') : '',
-  )
+  let highlightedSource = $derived(message.htmlBody ? highlight(formatHtml(message.htmlBody), 'xml') : '')
   let highlightedJson = $derived(highlight(JSON.stringify(message, null, 2), 'json'))
   let rawHeaders = $derived(message.raw.split(/\r?\n\r?\n/)[0] ?? '')
 
@@ -47,6 +45,24 @@
   let previewExpanded = $state(false)
   let previewBackground = $state<'light' | 'dark'>('light')
 
+  let previewDoc = $derived.by(() => {
+    const dark = previewBackground === 'dark'
+    const forced = dark ? '(min-width: 0px)' : '(max-width: 0px)'
+    const body = message.htmlBody.replace(
+      /\(\s*prefers-color-scheme\s*:\s*dark\s*\)/gi,
+      forced,
+    )
+    const backdrop = `
+      <style>
+        html {
+          background: ${dark ? '#0a0a0a' : '#ffffff'};
+          color-scheme: ${dark ? 'dark' : 'light'};
+        }
+      </style>
+    `
+    return backdrop + body
+  })
+
   const widthOptions: [PreviewWidth, string][] = [
     ['mobile', 'Mobile'],
     ['tablet', 'Tablet'],
@@ -58,7 +74,6 @@
     desktop: 'max-w-full',
   }
 
-  // Default to the HTML tab when a message has an HTML part, otherwise Text.
   $effect(() => {
     message.id
     activeTab = message.htmlBody ? 'html' : 'text'
@@ -94,14 +109,6 @@
             {message.to.join(', ')}{@render copyButton(message.to.join(', '))}
           </div>
           <div class="flex items-center">
-            <dt class="inline-block w-16 font-semibold text-neutral-300">cc</dt>
-            <span class="text-neutral-600">(none)</span>
-          </div>
-          <div class="flex items-center">
-            <dt class="inline-block w-16 font-semibold text-neutral-300">reply</dt>
-            <span class="text-neutral-600">{message.from}</span>
-          </div>
-          <div class="flex items-center">
             <dt class="inline-block w-16 font-semibold text-neutral-300">date</dt>
             {datetime(message.createdAt)}
             <span class="text-neutral-600">· {ago(message.createdAt)}</span>
@@ -131,7 +138,7 @@
         {#each message.attachments as attachment}
           <button class="flex items-center gap-2 border-2 border-neutral-900 bg-neutral-950 px-3 py-1 text-sm text-neutral-300 hover:border-accent hover:text-accent">
             <Icon name="paperclip" />
-            {attachment.filename} <span class="text-neutral-500">{attachment.content_type}</span>
+            {attachment.filename} <span class="text-neutral-500">{attachment.contentType}</span>
           </button>
         {/each}
       </div>
@@ -198,11 +205,11 @@
         <iframe
           title="html"
           sandbox=""
-          srcdoc={message.htmlBody}
-          class="relative z-40 mx-auto block h-full w-full {widthClasses[previewWidth]} border-2 border-neutral-900 {previewBackground === 'light' ? 'bg-white' : 'bg-neutral-900'}"
+          srcdoc={previewDoc}
+          class="relative z-40 mx-auto block h-full w-full {widthClasses[previewWidth]} border-0 {previewBackground === 'light' ? 'bg-white' : 'bg-neutral-900'}"
         ></iframe>
       {:else}
-        <div class="text-neutral-600">(no HTML part)</div>
+        <div class="p-8 text-neutral-600">(no HTML part)</div>
       {/if}
     {:else if activeTab === 'text'}
       {#if message.textBody}
