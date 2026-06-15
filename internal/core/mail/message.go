@@ -3,15 +3,15 @@ package mail
 import "time"
 
 type Message struct {
-	ID          string       `json:"id"`
-	From        string       `json:"from"`
-	To          []string     `json:"to"`
-	Subject     string       `json:"subject"`
-	TextBody    string       `json:"textBody"`
-	HTMLBody    string       `json:"htmlBody"`
-	Raw         string       `json:"raw"`
-	Attachments []Attachment `json:"attachments"`
-	CreatedAt   time.Time    `json:"createdAt"`
+	ID          string       `json:"id" bson:"id"`
+	From        string       `json:"from" bson:"from"`
+	To          []string     `json:"to" bson:"to"`
+	Subject     string       `json:"subject" bson:"subject"`
+	TextBody    string       `json:"textBody" bson:"textBody"`
+	HTMLBody    string       `json:"htmlBody" bson:"htmlBody"`
+	Raw         string       `json:"raw" bson:"raw"`
+	Attachments []Attachment `json:"attachments" bson:"attachments"`
+	CreatedAt   time.Time    `json:"createdAt" bson:"createdAt"`
 }
 
 func (m *Message) HasRecipients() bool {
@@ -19,7 +19,7 @@ func (m *Message) HasRecipients() bool {
 }
 
 type Attachment struct {
-	Filename    string `json:"filename"`
-	ContentType string `json:"content_type"`
-	Content     []byte `json:"content"`
+	Filename    string `json:"filename" bson:"filename"`
+	ContentType string `json:"contentType" bson:"contentType"`
+	Size        int    `json:"size" bson:"size"`
 }
