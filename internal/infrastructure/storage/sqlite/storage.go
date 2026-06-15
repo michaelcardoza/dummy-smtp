@@ -36,18 +36,34 @@ func (s *Storage) Save(ctx context.Context, message *mail.Message) error {
 			return err
 		}
 
-		placeholders := make([]string, 0, len(message.To))
-		recipients := make([]any, 0, len(message.To)*3)
+		if len(message.To) > 0 {
+			placeholders := make([]string, 0, len(message.To))
+			recipients := make([]any, 0, len(message.To)*3)
 
-		for i, addr := range message.To {
-			placeholders = append(placeholders, "(?, ?, ?)")
-			recipients = append(recipients, message.ID, i, addr)
+			for i, addr := range message.To {
+				placeholders = append(placeholders, "(?, ?, ?)")
+				recipients = append(recipients, message.ID, i, addr)
+			}
+
+			stmp = "INSERT INTO recipients (message_id, position, addr) VALUES" + strings.Join(placeholders, ",")
+			_, err = tx.ExecContext(ctx, stmp, recipients...)
+			if err != nil {
+				return err
+			}
 		}
 
-		stmp = "INSERT INTO recipients (message_id, position, addr) VALUES" + strings.Join(placeholders, ",")
-		_, err = tx.ExecContext(ctx, stmp, recipients...)
-		if err != nil {
-			return err
+		if len(message.Attachments) > 0 {
+			placeholders := make([]string, 0, len(message.Attachments))
+			attachments := make([]any, 0, len(message.Attachments)*4)
+			for i, a := range message.Attachments {
+				placeholders = append(placeholders, "(?, ?, ?, ?, ?)")
+				attachments = append(attachments, message.ID, i, a.Filename, a.ContentType, a.Size)
+			}
+
+			stmp = "INSERT INTO attachments (message_id, position, filename, content_type, size) VALUES" + strings.Join(placeholders, ",")
+			if _, err = tx.ExecContext(ctx, stmp, attachments...); err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -59,8 +75,13 @@ func (s *Storage) List(ctx context.Context) ([]*mail.Message, error) {
 		SELECT
 		    m.id,
 		    m.from_addr,
-		    json_group_array(s.addr ORDER BY s.position)
-		        FILTER (WHERE s.addr IS NOT NULL) AS to_recipients,
+		    json_group_array(s.addr ORDER BY s.position) FILTER (WHERE s.addr IS NOT NULL) AS to_recipients,
+		    COALESCE((
+		        SELECT json_group_array(
+		            json_object('filename', a.filename, 'contentType', a.content_type, 'size', a.size)
+		        )
+		        FROM (SELECT * FROM attachments WHERE message_id = m.id ORDER BY position) a
+		    ), '[]') AS attachments,
 		    m.subject,
 		    m.text_body,
 		    m.html_body,
@@ -79,10 +100,12 @@ func (s *Storage) List(ctx context.Context) ([]*mail.Message, error) {
 	for rows.Next() {
 		var message mail.Message
 		var recipients string
+		var attachments string
 		err = rows.Scan(
 			&message.ID,
 			&message.From,
 			&recipients,
+			&attachments,
 			&message.Subject,
 			&message.TextBody,
 			&message.HTMLBody,
@@ -94,6 +117,7 @@ func (s *Storage) List(ctx context.Context) ([]*mail.Message, error) {
 		}
 
 		json.Unmarshal([]byte(recipients), &message.To)
+		json.Unmarshal([]byte(attachments), &message.Attachments)
 
 		messages = append(messages, &message)
 	}
@@ -110,8 +134,13 @@ func (s *Storage) Get(ctx context.Context, id string) (*mail.Message, error) {
 		SELECT
 		    m.id,
 		    m.from_addr,
-		    json_group_array(s.addr ORDER BY s.position)
-		        FILTER (WHERE s.addr IS NOT NULL) AS to_recipients,
+		    json_group_array(s.addr ORDER BY s.position) FILTER (WHERE s.addr IS NOT NULL) AS to_recipients,
+		    COALESCE((
+		        SELECT json_group_array(
+		            json_object('filename', a.filename, 'contentType', a.content_type, 'size', a.size)
+		        )
+		        FROM (SELECT * FROM attachments WHERE message_id = m.id ORDER BY position) a
+		    ), '[]') AS attachments,
 		    m.subject,
 		    m.text_body,
 		    m.html_body,
@@ -125,10 +154,12 @@ func (s *Storage) Get(ctx context.Context, id string) (*mail.Message, error) {
 
 	var message mail.Message
 	var recipients string
+	var attachments string
 	err := row.Scan(
 		&message.ID,
 		&message.From,
 		&recipients,
+		&attachments,
 		&message.Subject,
 		&message.TextBody,
 		&message.HTMLBody,
@@ -140,6 +171,7 @@ func (s *Storage) Get(ctx context.Context, id string) (*mail.Message, error) {
 	}
 
 	json.Unmarshal([]byte(recipients), &message.To)
+	json.Unmarshal([]byte(attachments), &message.Attachments)
 
 	return &message, nil
 }

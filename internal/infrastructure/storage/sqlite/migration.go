@@ -22,6 +22,15 @@ func Migrate(db *sql.DB) error {
 		    addr NOT NULL,
 		    PRIMARY KEY(message_id, position)
 		);
+		CREATE TABLE IF NOT EXISTS attachments
+		(
+			message_id TEXT NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+			position INTEGER NOT NULL,
+			filename TEXT,
+			content_type TEXT,
+			size INTEGER NOT NULL,
+			PRIMARY KEY(message_id, position)
+		);
 		CREATE INDEX IF NOT EXISTS idx_recipients_addr ON recipients(addr);
 	`)
 	if err != nil {
